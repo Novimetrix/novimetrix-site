@@ -2,7 +2,7 @@
 	<service>
 		<engineName>WordPress</engineName>
 		<engineLink>https://wordpress.org/</engineLink>
-		<homePageLink>http://localhost:10004</homePageLink>
+		<homePageLink>http://localhost:10004/</homePageLink>
 		<apis>
 			<api name="WordPress" blogID="1" preferred="true" apiLink="http://localhost:10004/xmlrpc.php" />
 			<api name="Movable Type" blogID="1" preferred="false" apiLink="http://localhost:10004/xmlrpc.php" />
