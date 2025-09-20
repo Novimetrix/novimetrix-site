@@ -41,3 +41,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://novimetrix.com/sitemap.xml
+# Updated: 2025-09-20
