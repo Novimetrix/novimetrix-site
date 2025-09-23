@@ -1,0 +1,24 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20250923124228
+Username: FLUKE\moham
+RunAs User: FLUKE\moham
+Configuration Name: 
+Machine: FLUKE (Microsoft Windows NT 10.0.26100.0)
+Host Application: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File C:\NovimetrixRepo\novimetrix-site\localhost-clean.ps1
+Process ID: 16992
+PSVersion: 5.1.26100.6584
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.6584
+BuildVersion: 10.0.26100.6584
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+All clean.
+All clean.
+**********************
+Windows PowerShell transcript end
+End time: 20250923124229
+**********************
