@@ -1,9 +1,6 @@
-# FINAL-PATCH-ONECLICK.ps1 — all-in-one (v4)
-# v4 adds removal of:
-#   - Elementor runtime/frontend scripts (more aggressive matcher)
-#   - Inline Elementor bootstraps
-#   - wp-emoji-release script + inline emoji settings
-# Keeps previous fixes (localhost scrub, srcset/sizes removal, UTF-8 no BOM).
+# FINAL-PATCH-ONECLICK.ps1 — all-in-one (v5)
+# v5: remove Elementor frontend/runtime by explicit IDs + earlier host/path/inline matchers
+#     also keeps localhost scrub, srcset/sizes removal, emoji removal, UTF-8 (no BOM).
 
 param([string]$Root='.')
 
@@ -21,6 +18,7 @@ $ts=0; $tc=0; $lf=0; $sr=0; $err=0
 $rmScriptLocal=0; $rmLinkLocal=0
 $rmElementorSrc=0; $rmElementorInline=0; $rmLinkPreloadElem=0
 $rmEmojiSrc=0; $rmEmojiInline=0
+$rmElemIdScript=0; $rmElemIdInline=0
 
 # Base fixes
 $reLocal    = [regex]'(?i)https?://(?:localhost|127\.0\.0\.1)(?::\d+)?'
@@ -31,10 +29,14 @@ $reSrcAttr  = [regex]'(?i)\s+(srcset|sizes|imagesrcset)=(".*?"|''.*?'')'
 $reScriptLocal = [regex]"(?is)<script[^>]+src\s*=\s*[""'][^""']*(?:localhost|127\.0\.0\.1)[^""']*[""'][^>]*>\s*</script\s*>"
 $reLinkLocal   = [regex]"(?is)<link[^>]+href\s*=\s*[""'][^""']*(?:localhost|127\.0\.0\.1)[^""']*[""'][^>]*>"
 
-# Elementor script/link removal (broader patterns)
+# Elementor by path/host and inline signatures
 $reElementorSrc = [regex]"(?is)<script\b[^>]*\bsrc\s*=\s*[""'][^""']*/wp-content/plugins/elementor/assets/js/[^""']*(frontend|min|runtime)[^""']*[""'][^>]*>\s*</script\s*>"
-$reElementorInline = [regex]"(?is)<script\b[^>]*>\s*[^<]*(elementorFrontend|elementor\.modules|__webpack_require__)[\s\S]*?</script\s*>"
+$reElementorInline = [regex]"(?is)<script\b[^>]*>\s*[^<]*(elementorFrontendConfig|elementorFrontend|elementor\.modules|__webpack_require__)[\s\S]*?</script\s*>"
 $reLinkPreloadElem = [regex]"(?is)<link\b[^>]+\brel\s*=\s*[""']preload[""'][^>]+\bas\s*=\s*[""']script[""'][^>]+\bhref\s*=\s*[""'][^""']*/wp-content/plugins/elementor/assets/js/[^""']+[""'][^>]*>"
+
+# Elementor by explicit IDs (covers typical WP enqueued handles)
+$reElemIdScript = [regex]"(?is)<script\b[^>]+\bid\s*=\s*[""'](?:elementor-(?:pro-)?frontend-js|elementor-webpack-runtime-js)[""'][^>]*>\s*</script\s*>"
+$reElemIdInline = [regex]"(?is)<script\b[^>]+\bid\s*=\s*[""'](?:elementor-(?:pro-)?frontend-js-(?:before|after|extra)|elementor-webpack-runtime-js-(?:before|after|extra))[""'][^>]*>[\s\S]*?</script\s*>"
 
 # Emoji script & inline settings
 $reEmojiSrc    = [regex]"(?is)<script\b[^>]*\bsrc\s*=\s*[""'][^""']*/wp-includes/js/wp-emoji-release\.min\.js[^""']*[""'][^>]*>\s*</script\s*>"
@@ -54,6 +56,8 @@ foreach ($f in $files) {
     $cElemS = $reElementorSrc.Matches($new).Count
     $cElemI = $reElementorInline.Matches($new).Count
     $cElemP = $reLinkPreloadElem.Matches($new).Count
+    $cElemIdS = $reElemIdScript.Matches($new).Count
+    $cElemIdI = $reElemIdInline.Matches($new).Count
     $cEmoS  = $reEmojiSrc.Matches($new).Count
     $cEmoI  = $reEmojiInline.Matches($new).Count
 
@@ -63,6 +67,8 @@ foreach ($f in $files) {
     if ($cElemS -gt 0) { $new = $reElementorSrc.Replace($new, '') }
     if ($cElemI -gt 0) { $new = $reElementorInline.Replace($new, '') }
     if ($cElemP -gt 0) { $new = $reLinkPreloadElem.Replace($new, '') }
+    if ($cElemIdS -gt 0) { $new = $reElemIdScript.Replace($new, '') }
+    if ($cElemIdI -gt 0) { $new = $reElemIdInline.Replace($new, '') }
     if ($cEmoS  -gt 0) { $new = $reEmojiSrc.Replace($new, '') }
     if ($cEmoI  -gt 0) { $new = $reEmojiInline.Replace($new, '') }
 
@@ -81,6 +87,8 @@ foreach ($f in $files) {
       $rmElementorSrc += $cElemS
       $rmElementorInline += $cElemI
       $rmLinkPreloadElem += $cElemP
+      $rmElemIdScript += $cElemIdS
+      $rmElemIdInline += $cElemIdI
       $rmEmojiSrc += $cEmoS
       $rmEmojiInline += $cEmoI
     }
@@ -92,16 +100,18 @@ foreach ($f in $files) {
 $sw.Stop()
 
 $report = @(
-  'FINAL-PATCH-ONECLICK finished. (v4)',
+  'FINAL-PATCH-ONECLICK finished. (v5)',
   ('Scanned files                         : {0}' -f $ts),
   ('Changed files                         : {0}' -f $tc),
   ('Localhost URL fixes                   : {0}' -f $lf),
   ('srcset/sizes removed                  : {0}' -f $sr),
   ('localhost <script> removed            : {0}' -f $rmScriptLocal),
   ('localhost <link> removed              : {0}' -f $rmLinkLocal),
-  ('Elementor JS <script> removed         : {0}' -f $rmElementorSrc),
+  ('Elementor JS <script> removed (path)  : {0}' -f $rmElementorSrc),
   ('Elementor inline <script> removed     : {0}' -f $rmElementorInline),
   ('Elementor preload <link> removed      : {0}' -f $rmLinkPreloadElem),
+  ('Elementor <script> removed (by id)    : {0}' -f $rmElemIdScript),
+  ('Elementor inline removed (by id)      : {0}' -f $rmElemIdInline),
   ('wp-emoji-release <script> removed     : {0}' -f $rmEmojiSrc),
   ('wp-emoji inline settings removed      : {0}' -f $rmEmojiInline),
   ('Errors                                : {0}' -f $err),

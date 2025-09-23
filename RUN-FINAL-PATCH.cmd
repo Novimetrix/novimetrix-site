@@ -1,5 +1,5 @@
 @echo off
-:: RUN-FINAL-PATCH.cmd — launcher (v4)
+:: RUN-FINAL-PATCH.cmd — launcher (v5)
 setlocal EnableExtensions
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0FINAL-PATCH-ONECLICK.ps1" "."
 echo.
