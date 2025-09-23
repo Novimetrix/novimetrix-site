@@ -81,3 +81,20 @@ Write-Host ("  Files changed: {0}" -f ($changed | Select-Object -Unique | Measur
 Write-Host ("  localhost refs left: {0}" -f $localhostLeft)
 Write-Host ("  srcset/sizes left: {0}" -f $srcsetLeft)
 Write-Host "Open GitHub Desktop → the edited HTML files should now appear under Changes."
+
+# --- Added 2025-09-23: fix escaped localhost/127.0.0.1 URLs inside inline JS strings (e.g., wp-emoji-release) ---
+Write-Host "Step: Fixing escaped localhost URLs in HTML (inline JS strings)..."
+
+Get-ChildItem -Recurse -Filter *.html | ForEach-Object {
+  $p = $_.FullName
+  $c = Get-Content $p -Raw
+
+  # Replace escaped forms like: http:\/\/localhost:10010\/... and https:\/\/127.0.0.1:10010\/...
+  $c = $c -replace 'https?:\\/\\/(localhost|127\.0\.0\.1):\d+\/', '/'
+
+  # Replace percent-encoded forms like: http%3A%2F%2Flocalhost%3A10010%2F...
+  $c = $c -replace 'https?%3A%2F%2F(localhost|127%2E0%2E0%2E1)%3A\d+%2F', '/'
+
+  Set-Content $p $c -Encoding UTF8
+}
+
