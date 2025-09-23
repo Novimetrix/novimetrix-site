@@ -82,18 +82,21 @@ Write-Host ("  localhost refs left: {0}" -f $localhostLeft)
 Write-Host ("  srcset/sizes left: {0}" -f $srcsetLeft)
 Write-Host "Open GitHub Desktop → the edited HTML files should now appear under Changes."
 
-# --- Added 2025-09-23: fix escaped localhost/127.0.0.1 URLs inside inline JS strings (e.g., wp-emoji-release) ---
-Write-Host "Step: Fixing escaped localhost URLs in HTML (inline JS strings)..."
+# --- Added 2025-09-23 (v2): hard-remove emoji inline script blocks & broaden escaped localhost patterns ---
+Write-Host "Step: Removing emoji inline script blocks and cleaning escaped/encoded localhost URLs..."
 
-Get-ChildItem -Recurse -Filter *.html | ForEach-Object {
+# Target both .html and .htm
+Get-ChildItem -Recurse -Include *.html,*.htm | ForEach-Object {
   $p = $_.FullName
   $c = Get-Content $p -Raw
 
-  # Replace escaped forms like: http:\/\/localhost:10010\/... and https:\/\/127.0.0.1:10010\/...
-  $c = $c -replace 'https?:\\/\\/(localhost|127\.0\.0\.1):\d+\/', '/'
+  # 1) Remove entire inline script blocks that include wp-emoji-release or _wpemojiSettings
+  $c = [Regex]::Replace($c, '(?s)<script[^>]*>.*?(wp-emoji-release|_wpemojiSettings).*?</script>', '', 'IgnoreCase')
 
-  # Replace percent-encoded forms like: http%3A%2F%2Flocalhost%3A10010%2F...
-  $c = $c -replace 'https?%3A%2F%2F(localhost|127%2E0%2E0%2E1)%3A\d+%2F', '/'
+  # 2) Replace escaped localhost/127.0.0.1 (port optional)
+  $c = $c -replace 'https?:\\/\\/(localhost|127\.0\.0\.1)(?::\d+)?\/', '/'
+  # 3) Replace percent-encoded localhost (port optional)
+  $c = $c -replace 'https?%3A%2F%2F(localhost|127%2E0%2E0%2E1)(?:%3A\d+)?%2F', '/'
 
   Set-Content $p $c -Encoding UTF8
 }
