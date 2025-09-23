@@ -1,13 +1,15 @@
-# FINAL-PATCH-ONECLICK.ps1 — all-in-one replacement (patch + clean + restore)
-# v3: remove Elementor runtime/frontend JS (which dynamically tries to load localhost chunks),
-#     plus any localhost <script>/<link> tags, plus previous fixes.
-param([string]$Root='.')
+# FINAL-PATCH-ONECLICK.ps1 — all-in-one (v4)
+# v4 adds removal of:
+#   - Elementor runtime/frontend scripts (more aggressive matcher)
+#   - Inline Elementor bootstraps
+#   - wp-emoji-release script + inline emoji settings
+# Keeps previous fixes (localhost scrub, srcset/sizes removal, UTF-8 no BOM).
 
+param([string]$Root='.')
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 
-# Only text-like files (avoid images/fonts/SVG)
 $include = @('*.html','*.htm','*.css','*.js','*.xml','*.json','*.txt','*.md')
 $exclude = @('*.svg','*.png','*.jpg','*.jpeg','*.webp','*.gif','*.ico','*.woff','*.woff2','*.ttf','*.otf','*.eot','*.pdf','*.zip','*.gz','*.map')
 
@@ -15,25 +17,28 @@ $files = Get-ChildItem -Path $Root -Recurse -File -Include $include | Where-Obje
   $exclude -notcontains ('*' + $_.Extension.TrimStart('.').ToLower())
 }
 
-$ts=0; $tc=0; $lf=0; $sr=0; $err=0; $rmScriptLocal=0; $rmLinkLocal=0; $rmElementorSrc=0; $rmElementorInline=0; $rmLinkPreloadElem=0
+$ts=0; $tc=0; $lf=0; $sr=0; $err=0
+$rmScriptLocal=0; $rmLinkLocal=0
+$rmElementorSrc=0; $rmElementorInline=0; $rmLinkPreloadElem=0
+$rmEmojiSrc=0; $rmEmojiInline=0
 
-# Regex patterns
+# Base fixes
 $reLocal    = [regex]'(?i)https?://(?:localhost|127\.0\.0\.1)(?::\d+)?'
 $reLocalENC = [regex]'(?i)https?%3A%2F%2F(?:localhost|127\.0\.0\.1)(?:%3A\d+)?'
 $reSrcAttr  = [regex]'(?i)\s+(srcset|sizes|imagesrcset)=(".*?"|''.*?'')'
 
-# Remove entire tags that point to localhost
+# Remove tags hitting localhost
 $reScriptLocal = [regex]"(?is)<script[^>]+src\s*=\s*[""'][^""']*(?:localhost|127\.0\.0\.1)[^""']*[""'][^>]*>\s*</script\s*>"
 $reLinkLocal   = [regex]"(?is)<link[^>]+href\s*=\s*[""'][^""']*(?:localhost|127\.0\.0\.1)[^""']*[""'][^>]*>"
 
-# Remove Elementor runtime/frontend script tags regardless of domain
-$reElementorSrc = [regex]"(?is)<script[^>]+src\s*=\s*[""'][^""']*/wp-content/plugins/elementor/assets/js/[^""']+[""'][^>]*>\s*</script\s*>"
+# Elementor script/link removal (broader patterns)
+$reElementorSrc = [regex]"(?is)<script\b[^>]*\bsrc\s*=\s*[""'][^""']*/wp-content/plugins/elementor/assets/js/[^""']*(frontend|min|runtime)[^""']*[""'][^>]*>\s*</script\s*>"
+$reElementorInline = [regex]"(?is)<script\b[^>]*>\s*[^<]*(elementorFrontend|elementor\.modules|__webpack_require__)[\s\S]*?</script\s*>"
+$reLinkPreloadElem = [regex]"(?is)<link\b[^>]+\brel\s*=\s*[""']preload[""'][^>]+\bas\s*=\s*[""']script[""'][^>]+\bhref\s*=\s*[""'][^""']*/wp-content/plugins/elementor/assets/js/[^""']+[""'][^>]*>"
 
-# Remove inline Elementor initialization/runtime blocks that trigger chunk loading
-$reElementorInline = [regex]"(?is)<script[^>]*>\s*([^<]*?(elementorFrontend|elementor\.modules|__webpack_require__)[^<]*?)+\s*</script\s*>"
-
-# Remove link preloads that point to Elementor JS (rare but possible)
-$reLinkPreloadElem = [regex]"(?is)<link[^>]+rel\s*=\s*[""']preload[""'][^>]+as\s*=\s*[""']script[""'][^>]+href\s*=\s*[""'][^""']*/wp-content/plugins/elementor/assets/js/[^""']+[""'][^>]*>"
+# Emoji script & inline settings
+$reEmojiSrc    = [regex]"(?is)<script\b[^>]*\bsrc\s*=\s*[""'][^""']*/wp-includes/js/wp-emoji-release\.min\.js[^""']*[""'][^>]*>\s*</script\s*>"
+$reEmojiInline = [regex]"(?is)<script\b[^>]*>\s*[^<]*(wp-emoji|twemoji|emojiSettings)[\s\S]*?</script\s*>"
 
 foreach ($f in $files) {
   try {
@@ -49,15 +54,19 @@ foreach ($f in $files) {
     $cElemS = $reElementorSrc.Matches($new).Count
     $cElemI = $reElementorInline.Matches($new).Count
     $cElemP = $reLinkPreloadElem.Matches($new).Count
+    $cEmoS  = $reEmojiSrc.Matches($new).Count
+    $cEmoI  = $reEmojiInline.Matches($new).Count
 
-    # replacements (order matters: strip whole tags first, then attributes/urls)
+    # strip whole tags first
     if ($cScrL -gt 0) { $new = $reScriptLocal.Replace($new, '') }
     if ($cLnkL -gt 0) { $new = $reLinkLocal.Replace($new, '') }
     if ($cElemS -gt 0) { $new = $reElementorSrc.Replace($new, '') }
     if ($cElemI -gt 0) { $new = $reElementorInline.Replace($new, '') }
     if ($cElemP -gt 0) { $new = $reLinkPreloadElem.Replace($new, '') }
+    if ($cEmoS  -gt 0) { $new = $reEmojiSrc.Replace($new, '') }
+    if ($cEmoI  -gt 0) { $new = $reEmojiInline.Replace($new, '') }
 
-    # now clean remaining localhost urls + responsive attrs
+    # then clean localhost urls + responsive attrs
     $new = $reLocal.Replace($new, '')
     $new = $reLocalENC.Replace($new, '')
     $new = $reSrcAttr.Replace($new, '')
@@ -72,6 +81,8 @@ foreach ($f in $files) {
       $rmElementorSrc += $cElemS
       $rmElementorInline += $cElemI
       $rmLinkPreloadElem += $cElemP
+      $rmEmojiSrc += $cEmoS
+      $rmEmojiInline += $cEmoI
     }
   } catch {
     $err++
@@ -81,18 +92,20 @@ foreach ($f in $files) {
 $sw.Stop()
 
 $report = @(
-  'FINAL-PATCH-ONECLICK finished. (v3)',
-  ('Scanned files                   : {0}' -f $ts),
-  ('Changed files                   : {0}' -f $tc),
-  ('Localhost URL fixes             : {0}' -f $lf),
-  ('srcset/sizes removed            : {0}' -f $sr),
-  ('localhost <script> removed      : {0}' -f $rmScriptLocal),
-  ('localhost <link> removed        : {0}' -f $rmLinkLocal),
-  ('Elementor JS <script> removed   : {0}' -f $rmElementorSrc),
-  ('Elementor inline <script> removed: {0}' -f $rmElementorInline),
-  ('Elementor preload <link> removed: {0}' -f $rmLinkPreloadElem),
-  ('Errors                          : {0}' -f $err),
-  ('Elapsed                         : {0:n1}s' -f $sw.Elapsed.TotalSeconds)
+  'FINAL-PATCH-ONECLICK finished. (v4)',
+  ('Scanned files                         : {0}' -f $ts),
+  ('Changed files                         : {0}' -f $tc),
+  ('Localhost URL fixes                   : {0}' -f $lf),
+  ('srcset/sizes removed                  : {0}' -f $sr),
+  ('localhost <script> removed            : {0}' -f $rmScriptLocal),
+  ('localhost <link> removed              : {0}' -f $rmLinkLocal),
+  ('Elementor JS <script> removed         : {0}' -f $rmElementorSrc),
+  ('Elementor inline <script> removed     : {0}' -f $rmElementorInline),
+  ('Elementor preload <link> removed      : {0}' -f $rmLinkPreloadElem),
+  ('wp-emoji-release <script> removed     : {0}' -f $rmEmojiSrc),
+  ('wp-emoji inline settings removed      : {0}' -f $rmEmojiInline),
+  ('Errors                                : {0}' -f $err),
+  ('Elapsed                               : {0:n1}s' -f $sw.Elapsed.TotalSeconds)
 )
 $reportText = $report -join [Environment]::NewLine
 $reportText | Write-Host
