@@ -16,6 +16,11 @@ foreach ($f in $files) {
 if ($f.Extension -in '.html','.htm') {
   $t = [Regex]::Replace($t, '(?is)<!--\s*Mirrored from .*?-->', '')
 }
+# Remove inline emoji script blocks that contain wp-emoji-release or _wpemojiSettings
+if ($f.Extension -in '.html','.htm') {
+  $t = [Regex]::Replace($t, '(?is)<script[^>]*>.*?(wp-emoji-release|_wpemojiSettings).*?</script>', '')
+}
+
 
 
   # Escaped: http:\/\/localhost or 127.0.0.1 (optional port)

@@ -1,12 +1,12 @@
 ﻿**********************
 Windows PowerShell transcript start
-Start time: 20250923120234
+Start time: 20250923120830
 Username: FLUKE\moham
 RunAs User: FLUKE\moham
 Configuration Name: 
 Machine: FLUKE (Microsoft Windows NT 10.0.26100.0)
 Host Application: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File C:\NovimetrixRepo\novimetrix-site\localhost-clean.ps1
-Process ID: 12420
+Process ID: 4404
 PSVersion: 5.1.26100.6584
 PSEdition: Desktop
 PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.6584
@@ -20,5 +20,5 @@ All clean.
 All clean.
 **********************
 Windows PowerShell transcript end
-End time: 20250923120234
+End time: 20250923120831
 **********************
