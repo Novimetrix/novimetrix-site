@@ -101,3 +101,41 @@ Get-ChildItem -Recurse -Include *.html,*.htm | ForEach-Object {
   Set-Content $p $c -Encoding UTF8
 }
 
+
+
+# --- Added 2025-09-23 (v3): broaden file types and localhost patterns; add a final report ---
+Write-Host "Step: Global localhost cleanup across HTML/JS/CSS/JSON/XML/SVG..."
+
+Get-ChildItem -Recurse -Include *.html,*.htm,*.js,*.css,*.json,*.xml,*.svg -File | ForEach-Object {
+  $p = $_.FullName
+  $c = Get-Content $p -Raw
+
+  # Remove any emoji inline script blocks (harmless on non-HTML files; won't match)
+  $c = [Regex]::Replace($c, '(?s)<script[^>]*>.*?(wp-emoji-release|_wpemojiSettings).*?</script>', '', 'IgnoreCase')
+
+  # 1) Escaped http(s)://localhost or 127.0.0.1 (port optional)
+  $c = $c -replace 'https?:\\/\\/(localhost|127\.0\.0\.1)(?::\d+)?\/', '/'
+
+  # 2) Percent-encoded http(s)://localhost or 127.0.0.1 (port optional)
+  $c = $c -replace 'https?%3A%2F%2F(localhost|127%2E0%2E0%2E1)(?:%3A\d+)?%2F', '/'
+
+  # 3) Plain (non-escaped) http(s)://localhost or 127.0.0.1 (port optional)
+  $c = $c -replace 'https?:\/\/(localhost|127\.0\.0\.1)(?::\d+)?\/', '/'
+
+  # 4) Protocol-relative //localhost or //127.0.0.1 (port optional)
+  $c = $c -replace '\/\/(localhost|127\.0\.0\.1)(?::\d+)?\/', '/'
+
+  Set-Content $p $c -Encoding UTF8
+}
+
+Write-Host "Step: Post-cleanup report (any leftovers shown below)..." -ForegroundColor Cyan
+# Quick grep-like report for any lingering localhost references (escaped or plain)
+$patterns = @('http:\\/\\/localhost','http:\\/\\/127\.0\.0\.1','https?:\/\/localhost','https?:\/\/127\.0\.0\.1','\/\/localhost','\/\/127\.0\.0\.1')
+foreach ($pat in $patterns) {
+  $matches = Get-ChildItem -Recurse -Include *.html,*.htm,*.js,*.css,*.json,*.xml,*.svg -File | Select-String -Pattern $pat -SimpleMatch
+  if ($matches) {
+    Write-Host ("LEFTOVER pattern [{0}]:" -f $pat) -ForegroundColor Yellow
+    $matches | ForEach-Object { Write-Host ("  {0}:{1}" -f $_.Path, $_.Line.Trim()) }
+  }
+}
+
