@@ -1,66 +1,59 @@
-$ErrorActionPreference = 'Stop'
+<#
+  localhost-clean.ps1
+  Safely rewrites any localhost/127.0.0.1 URLs to root-relative paths **only** in HTML/HTM/CSS.
+  - Skips JS/SVG entirely to avoid breaking regex/icons.
+  - Forces UTF-8 (no BOM) when saving to prevent garbled characters.
+  - Writes a simple log: localhost-clean.log
+#>
 
-# Always log to a file in the working folder
-$Log = Join-Path (Get-Location) 'localhost-clean.log'
-try { "=== Run: $(Get-Date) ===" | Out-File -FilePath $Log -Append -Encoding UTF8 } catch {}
+param(
+  [string]$Path = "."
+)
 
-function Read-WithOriginalEncoding($Path) {
-  $sr = New-Object System.IO.StreamReader($Path, [System.Text.Encoding]::Default, $true)
+$root = Resolve-Path -LiteralPath $Path
+$log  = Join-Path $root "localhost-clean.log"
+
+# Start log
+"=== localhost-clean.ps1 @ $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') ===" | Out-File -FilePath $log -Encoding utf8
+
+# Patterns to replace -> '/'
+$patterns = @(
+  @{ Name = "abs-http(s)-localhost"; Pattern = '(?i)https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/'; Replacement = '/' },
+  @{ Name = "proto-relative-localhost"; Pattern = '(?i)\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/'; Replacement = '/' },
+  @{ Name = "urlencoded-http-localhost"; Pattern = '(?i)http%3A%2F%2F(?:localhost|127\.0\.0\.1)(?:%3A\d+)?%2F'; Replacement = '/' },
+  @{ Name = "urlencoded-https-localhost"; Pattern = '(?i)https%3A%2F%2F(?:localhost|127\.0\.0\.1)(?:%3A\d+)?%2F'; Replacement = '/' }
+)
+
+# Only touch HTML/HTM/CSS
+$targets = Get-ChildItem -Path $root -Recurse -File | Where-Object { $_.Extension -in '.html', '.htm', '.css' }
+
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+
+foreach ($f in $targets) {
   try {
-    $text = $sr.ReadToEnd()
-    $enc  = $sr.CurrentEncoding
-    [PSCustomObject]@{ Text=$text; Encoding=$enc }
-  } finally {
-    $sr.Close()
+    $bytes   = [System.IO.File]::ReadAllBytes($f.FullName)
+    $text    = [System.Text.Encoding]::UTF8.GetString($bytes)
+
+    $beforeLen = $text.Length
+    $totalRepl = 0
+
+    foreach ($p in $patterns) {
+      $matches = [System.Text.RegularExpressions.Regex]::Matches($text, $p.Pattern).Count
+      if ($matches -gt 0) {
+        $text = [System.Text.RegularExpressions.Regex]::Replace($text, $p.Pattern, $p.Replacement)
+        $totalRepl += $matches
+      }
+    }
+
+    if ($totalRepl -gt 0) {
+      # Save as UTF-8 without BOM
+      [System.IO.File]::WriteAllText($f.FullName, $text, $utf8NoBom)
+      "Changed: $($f.FullName) (replacements=$totalRepl)" | Out-File -FilePath $log -Append -Encoding utf8
+    }
+  }
+  catch {
+    "ERROR: $($f.FullName) -> $($_.Exception.Message)" | Out-File -FilePath $log -Append -Encoding utf8
   }
 }
 
-function Write-WithEncoding($Path, $Text, $Encoding) {
-  $sw = New-Object System.IO.StreamWriter($Path, $false, $Encoding)
-  try { $sw.Write($Text) } finally { $sw.Close() }
-}
-
-$files = Get-ChildItem -Recurse -File -Include *.html,*.htm,*.js,*.css,*.json,*.xml,*.svg
-
-foreach ($f in $files) {
-  $r = Read-WithOriginalEncoding -Path $f.FullName
-  $t = $r.Text
-  $enc = $r.Encoding
-
-  $isHtml = $f.Extension -in '.html','.htm'
-
-  # Remove HTTrack header comment (HTML only)
-  if ($isHtml) {
-    $t = [Regex]::Replace($t, '(?is)<!--\s*Mirrored from .*?-->', '')
-    # Remove inline emoji settings blocks if present
-    $t = [Regex]::Replace($t, '(?is)<script[^>]*>.*?(wp-emoji-release|_wpemojiSettings).*?</script>', '')
-  }
-
-  # Localhost cleanups (escaped, percent-encoded, plain, protocol-relative)
-  $t = $t -replace 'https?:\\/\\/(localhost|127\.0\.0\.1)(?::\d+)?\/', '/'
-  $t = $t -replace 'https?%3A%2F%2F(localhost|127%2E0%2E0%2E1)(?:%3A\d+)?%2F', '/'
-  $t = $t -replace 'https?:\/\/(localhost|127\.0\.0\.1)(?::\d+)?\/', '/'
-  $t = $t -replace '\/\/(localhost|127\.0\.0\.1)(?::\d+)?\/', '/'
-  $t = $t -replace 'https?:\\\/\\\/(localhost|127\.0\.0\.1)(?::\d+)?', ''
-
-  # Normalize escaped slashes
-  $t = $t -replace '\\\/', '/'
-
-  Write-WithEncoding -Path $f.FullName -Text $t -Encoding $enc
-}
-
-# Reports
-$leftA = Get-ChildItem -Recurse -File -Include *.html,*.htm,*.js,*.css,*.json,*.xml,*.svg | Select-String -SimpleMatch 'http:\/\/localhost'
-$leftB = Get-ChildItem -Recurse -File -Include *.html,*.htm,*.js,*.css,*.json,*.xml,*.svg | Select-String -SimpleMatch 'wp-emoji-release'
-$leftC = Get-ChildItem -Recurse -File -Include *.html,*.htm,*.js,*.css,*.json,*.xml,*.svg | Select-String -SimpleMatch 'localhost'
-
-if ($leftA -or $leftB -or $leftC) {
-  if ($leftA) { 'LEFTOVERS (http:\/\/localhost):' | Tee-Object -FilePath $Log -Append | Write-Host -ForegroundColor Yellow; $leftA | ForEach-Object { ("  {0}: {1}" -f $_.Path, $_.Line.Trim()) | Tee-Object -FilePath $Log -Append | Write-Host } }
-  if ($leftB) { 'LEFTOVERS (wp-emoji-release):' | Tee-Object -FilePath $Log -Append | Write-Host -ForegroundColor Yellow; $leftB | ForEach-Object { ("  {0}: {1}" -f $_.Path, $_.Line.Trim()) | Tee-Object -FilePath $Log -Append | Write-Host } }
-  if ($leftC) { 'LEFTOVERS (localhost):' | Tee-Object -FilePath $Log -Append | Write-Host -ForegroundColor Yellow; $leftC | ForEach-Object { ("  {0}: {1}" -f $_.Path, $_.Line.Trim()) | Tee-Object -FilePath $Log -Append | Write-Host } }
-} else {
-  'All clean.' | Tee-Object -FilePath $Log -Append | Write-Host -ForegroundColor Green
-}
-
-# Keep window open if user ran the .ps1 directly
-if ($Host.Name -notmatch 'ConsoleHost') { } else { Read-Host 'Press Enter to close' | Out-Null }
+"Done. Files scanned: $($targets.Count)" | Out-File -FilePath $log -Append -Encoding utf8
