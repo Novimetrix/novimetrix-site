@@ -1,7 +1,12 @@
-FINAL-PATCH-ONECLICK finished.
-Scanned files       : 27
-Changed files       : 4
-Localhost fixes     : 94
-srcset/sizes removed: 32
-Errors              : 0
-Elapsed             : 0.9s
+FINAL-PATCH-ONECLICK finished. (v3)
+Scanned files                   : 27
+Changed files                   : 4
+Localhost URL fixes             : 94
+srcset/sizes removed            : 32
+localhost <script> removed      : 4
+localhost <link> removed        : 31
+Elementor JS <script> removed   : 9
+Elementor inline <script> removed: 4
+Elementor preload <link> removed: 0
+Errors                          : 0
+Elapsed                         : 3.7s
