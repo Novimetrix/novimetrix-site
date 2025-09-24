@@ -1,17 +1,16 @@
-FINAL-PATCH-ONECLICK finished. (ULTRA SAFE v11)
-Scanned files                         : 28
+FINAL-PATCH-ONECLICK finished. (v5)
+Scanned files                         : 27
 Changed files                         : 4
 Localhost URL fixes                   : 94
 srcset/sizes removed                  : 32
 localhost <script> removed            : 4
-localhost <link> removed             : 0
+localhost <link> removed              : 31
+Elementor JS <script> removed (path)  : 9
+Elementor inline <script> removed     : 4
+Elementor preload <link> removed      : 0
+Elementor <script> removed (by id)    : 8
+Elementor inline removed (by id)      : 4
 wp-emoji-release <script> removed     : 0
 wp-emoji inline settings removed      : 4
-CSS guard injected into HTML          : 4
-Absolute host -> root-relative        : 0
-Case-fixed /wp-content/uploads names  : 0
-iphone.webp explicit attributes added : 0
-Tablet-only hide classes removed      : 0
-External tablet JS injected           : 4
 Errors                                : 0
 Elapsed                               : 1.0s
