@@ -1,6 +1,7 @@
-# FINAL-PATCH-ONECLICK (ULTRA SAFE) — v6
+# FINAL-PATCH-ONECLICK (ULTRA SAFE) — v7
 # Keeps: localhost scrub, remove srcset/sizes, emoji cleanup, UTF-8 (no BOM).
-# Does NOT remove any Elementor JS. Also injects a CSS visibility guard into HTML.
+# Does NOT remove any Elementor JS. Injects CSS visibility guard.
+# NEW: Normalize ALL /wp-content/... URLs to root-relative (fixes dev-host absolute URLs).
 param([string]$Root='.')
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
@@ -9,7 +10,7 @@ $utf8 = New-Object System.Text.UTF8Encoding($false)
 $include = @('*.html','*.htm','*.css','*.js','*.xml','*.json','*.txt','*.md')
 $exclude = @('*.svg','*.png','*.jpg','*.jpeg','*.webp','*.gif','*.woff','*.woff2','*.ttf','*.otf','*.eot','*.pdf','*.zip','*.gz','*.map')
 
-$ts=0; $tc=0; $lf=0; $sr=0; $err=0; $guard=0
+$ts=0; $tc=0; $lf=0; $sr=0; $err=0; $guard=0; $norm=0
 $rmScriptLocal=0; $rmLinkLocal=0
 $rmEmojiSrc=0; $rmEmojiInline=0
 
@@ -29,6 +30,14 @@ $reEmojiInline = [regex]"(?is)<script\b[^>]*>\s*[^<]*(wp-emoji|twemoji|emojiSett
 # CSS guard (ensures images render even if JS is blocked)
 $cssGuard = '<style id="nm-image-visibility-guard">.elementor-widget-image img,img.wp-image{opacity:1!important;visibility:visible!important}</style>'
 $reHeadClose = [regex]'(?is)</head>'
+
+# Normalize ANY absolute host to root-relative when path is /wp-content/...
+# 1) HTML attributes and inline JS/CSS
+$reAbsToRoot = [regex]'(?i)https?://[^""'']+(/wp-content/[^""'')\s>]+)'
+# 2) URL-encoded forms
+$reAbsToRootENC = [regex]'(?i)https?%3A%2F%2F[^&]+(%2Fwp-content%2F[^&""'']+)'
+# 3) CSS url(...) patterns
+$reCssUrlAbs = [regex]'(?is)url\((["'']?)https?://[^)]+(/wp-content/[^)]+)\1\)'
 
 $files = Get-ChildItem -Path $Root -Recurse -File -Include $include | Where-Object {
   $exclude -notcontains ('*' + $_.Extension.TrimStart('.').ToLower())
@@ -59,6 +68,13 @@ foreach ($f in $files) {
     $new = $reLocalENC.Replace($new, '')
     $new = $reSrcAttr.Replace($new, '')
 
+    # normalize absolute dev/live hosts to root-relative
+    $pre = $new
+    $new = $reAbsToRoot.Replace($new, '$1')
+    $new = $reAbsToRootENC.Replace($new, '$1')
+    $new = $reCssUrlAbs.Replace($new, 'url($1$2)')
+    if ($new -ne $pre) { $norm++ }
+
     # Inject CSS guard into HTML once
     if ($f.Extension -match '^\.(html|htm)$') {
       if ($new -notmatch 'nm-image-visibility-guard') {
@@ -85,7 +101,7 @@ foreach ($f in $files) {
 $sw.Stop()
 
 $report = @(
-  'FINAL-PATCH-ONECLICK finished. (ULTRA SAFE v6)',
+  'FINAL-PATCH-ONECLICK finished. (ULTRA SAFE v7)',
   ('Scanned files                         : {0}' -f $ts),
   ('Changed files                         : {0}' -f $tc),
   ('Localhost URL fixes                   : {0}' -f $lf),
@@ -95,6 +111,7 @@ $report = @(
   ('wp-emoji-release <script> removed     : {0}' -f $rmEmojiSrc),
   ('wp-emoji inline settings removed      : {0}' -f $rmEmojiInline),
   ('CSS guard injected into HTML          : {0}' -f $guard),
+  ('Absolute host -> root-relative        : {0}' -f $norm),
   ('Errors                                : {0}' -f $err),
   ('Elapsed                               : {0:n1}s' -f $sw.Elapsed.TotalSeconds)
 )
