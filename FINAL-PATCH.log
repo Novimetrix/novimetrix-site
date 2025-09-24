@@ -1,16 +1,12 @@
-FINAL-PATCH-ONECLICK finished. (v5)
-Scanned files                         : 57
-Changed files                         : 11
-Localhost URL fixes                   : 418
-srcset/sizes removed                  : 64
-localhost <script> removed            : 8
-localhost <link> removed              : 62
-Elementor JS <script> removed (path)  : 0
-Elementor inline <script> removed     : 0
-Elementor preload <link> removed      : 0
-Elementor <script> removed (by id)    : 0
-Elementor inline removed (by id)      : 0
+FINAL-PATCH-ONECLICK finished. (ULTRA SAFE v6)
+Scanned files                         : 27
+Changed files                         : 4
+Localhost URL fixes                   : 94
+srcset/sizes removed                  : 32
+localhost <script> removed            : 4
+localhost <link> removed              : 31
 wp-emoji-release <script> removed     : 0
-wp-emoji inline settings removed      : 8
+wp-emoji inline settings removed      : 4
+CSS guard injected into HTML          : 4
 Errors                                : 0
-Elapsed                               : 1.7s
+Elapsed                               : 0.3s

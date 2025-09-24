@@ -1,8 +1,0 @@
-"-qir10%e0C2%Ps2u1j0%s%u0N0%I0p3DaK0H0%kf2o0A %f#f" -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" http://localhost:10010/ -O1 "C:\Users\moham\Desktop\Export\Novimetrix" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar+*/wp-content/uploads/*.webp +*/wp-content/uploads/*.png +*.webp +*.png -*/?* -*/feed/* -*/wp-json/* -*/xmlrpc.php +*.svg +*.woff +*.woff2 +*.ttf
-File generated automatically on Wed, 24 Sep 2025 07:51:15, do NOT edit
-
-To update a mirror, just launch httrack without any parameters
-The existing cache will be used (and modified)
-To have other options, retype all parameters and launch HTTrack
-To continue an interrupted mirror, just launch httrack without any parameters
-
