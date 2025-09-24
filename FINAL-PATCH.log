@@ -1,0 +1,14 @@
+FINAL-PATCH-ONECLICK finished. (ULTRA SAFE v8)
+Scanned files                         : 27
+Changed files                         : 4
+Localhost URL fixes                   : 94
+srcset/sizes removed                  : 32
+localhost <script> removed            : 4
+localhost <link> removed              : 31
+wp-emoji-release <script> removed     : 0
+wp-emoji inline settings removed      : 4
+CSS guard injected into HTML          : 4
+Absolute host -> root-relative        : 0
+Case-fixed /wp-content/uploads names  : 0
+Errors                                : 0
+Elapsed                               : 1.0s
