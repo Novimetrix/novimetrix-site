@@ -1,4 +1,4 @@
-FINAL-PATCH-ONECLICK finished. (ULTRA SAFE v8)
+FINAL-PATCH-ONECLICK finished. (ULTRA SAFE v10)
 Scanned files                         : 27
 Changed files                         : 4
 Localhost URL fixes                   : 94
@@ -10,5 +10,7 @@ wp-emoji inline settings removed      : 4
 CSS guard injected into HTML          : 4
 Absolute host -> root-relative        : 0
 Case-fixed /wp-content/uploads names  : 0
+iphone.webp explicit attributes added : 1
+Tablet-only hide classes removed      : 0
 Errors                                : 0
 Elapsed                               : 1.0s

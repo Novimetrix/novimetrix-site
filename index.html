@@ -165,7 +165,21 @@ flexibility(document.documentElement);
 <link rel="icon" href="wp-content/uploads/2025/09/cropped-novimetrix_bird_logo-300x300.webp" />
 <link rel="apple-touch-icon" href="wp-content/uploads/2025/09/cropped-novimetrix_bird_logo-300x300.webp" />
 <meta name="msapplication-TileImage" content="/wp-content/uploads/2025/09/cropped-novimetrix_bird_logo-300x300.webp" />
-<style id="nm-image-visibility-guard">.elementor-widget-image img,img.wp-image{opacity:1!important;visibility:visible!important}</style></head>
+<style id="nm-image-visibility-guard">
+.elementor-widget-image img, img.wp-image{opacity:1!important;visibility:visible!important}
+@media (min-width:768px) and (max-width:1024.98px){
+  /* Ensure iphone.webp always paints on tablet */
+  img[src*="iphone.webp"]{display:block!important;opacity:1!important;visibility:visible!important;max-width:100%!important;height:auto!important}
+  /* If any link wraps iphone.webp, disable on tablet to avoid accidental redirect */
+  a:has(img[src*="iphone.webp"]){pointer-events:none!important}
+  /* Make sure the immediate containers render on tablet */
+  .elementor-column:has(img[src*="iphone.webp"]),
+  .elementor-container:has(img[src*="iphone.webp"]),
+  .e-con:has(img[src*="iphone.webp"]){
+    display:block!important;opacity:1!important;visibility:visible!important;min-height:560px!important
+  }
+}
+</style></head>
 
 <body itemtype='https://schema.org/WebPage' itemscope='itemscope' class="home wp-singular page-template-default page page-id-1448 wp-custom-logo wp-theme-astra ast-desktop ast-page-builder-template ast-no-sidebar astra-4.11.12 ast-single-post ast-inherit-site-logo-transparent ast-theme-transparent-header ast-hfb-header ast-normal-title-enabled elementor-default elementor-kit-1659 elementor-page elementor-page-1448">
 
@@ -406,7 +420,7 @@ class="post-1448 page type-page status-publish ast-article-single" id="post-1448
 		</div>
 						</div>
 				<div class="elementor-element elementor-element-5ee262f elementor-widget elementor-widget-image" data-id="5ee262f" data-element_type="widget" data-widget_type="image.default">
-															<img fetchpriority="high" decoding="async" width="1024" height="1536" src="wp-content/uploads/2025/09/iphone.webp" class="attachment-full size-full wp-image-2173" alt="iPhone with Novimetrix website preview" />															</div>
+															<img fetchpriority="high"  decoding="auto" width="1024" height="1536"  src="iphone.webp" class="attachment-full size-full wp-image-2173" alt="iPhone with Novimetrix website preview" / style="display:block;max-width:100%;height:auto;opacity:1;visibility:visible" loading="eager">															</div>
 				<div class="elementor-element elementor-element-4be2787 elementor-widget elementor-widget-spacer" data-id="4be2787" data-element_type="widget" data-widget_type="spacer.default">
 							<div class="elementor-spacer">
 			<div class="elementor-spacer-inner"></div>
