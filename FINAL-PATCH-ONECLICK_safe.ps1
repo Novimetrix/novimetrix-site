@@ -16,9 +16,9 @@ $files = Get-ChildItem -Path $Root -Recurse -File -Include $include | Where-Obje
 
 $ts=0; $tc=0; $lf=0; $sr=0; $err=0
 $rmScriptLocal=0; $rmLinkLocal=0
-$rmElementorSrc=0; $rmElementorInline=0; $rmLinkPreloadElem=0
+      $rmElementorSrc=0; $rmElementorInline=0; $rmLinkPreloadElem=0
 $rmEmojiSrc=0; $rmEmojiInline=0
-$rmElemIdScript=0; $rmElemIdInline=0
+      $rmElemIdScript=0; $rmElemIdInline=0
 
 # Base fixes
 $reLocal    = [regex]'(?i)https?://(?:localhost|127\.0\.0\.1)(?::\d+)?'
@@ -64,11 +64,11 @@ foreach ($f in $files) {
     # strip whole tags first
     if ($cScrL -gt 0) { $new = $reScriptLocal.Replace($new, '') }
     if ($cLnkL -gt 0) { $new = $reLinkLocal.Replace($new, '') }
-    if ($cElemS -gt 0) { $new = $reElementorSrc.Replace($new, '') }
-    if ($cElemI -gt 0) { $new = $reElementorInline.Replace($new, '') }
-    if ($cElemP -gt 0) { $new = $reLinkPreloadElem.Replace($new, '') }
-    if ($cElemIdS -gt 0) { $new = $reElemIdScript.Replace($new, '') }
-    if ($cElemIdI -gt 0) { $new = $reElemIdInline.Replace($new, '') }
+# SAFE: disabled Elementor removal ->     if ($cElemS -gt 0) { $new = $reElementorSrc.Replace($new, '') }
+# SAFE: disabled Elementor removal ->     if ($cElemI -gt 0) { $new = $reElementorInline.Replace($new, '') }
+# SAFE: disabled Elementor removal ->     if ($cElemP -gt 0) { $new = $reLinkPreloadElem.Replace($new, '') }
+# SAFE: disabled Elementor removal ->     if ($cElemIdS -gt 0) { $new = $reElemIdScript.Replace($new, '') }
+# SAFE: disabled Elementor removal ->     if ($cElemIdI -gt 0) { $new = $reElemIdInline.Replace($new, '') }
     if ($cEmoS  -gt 0) { $new = $reEmojiSrc.Replace($new, '') }
     if ($cEmoI  -gt 0) { $new = $reEmojiInline.Replace($new, '') }
 
@@ -84,11 +84,11 @@ foreach ($f in $files) {
       $sr += $cSrcA
       $rmScriptLocal += $cScrL
       $rmLinkLocal   += $cLnkL
-      $rmElementorSrc += $cElemS
-      $rmElementorInline += $cElemI
-      $rmLinkPreloadElem += $cElemP
-      $rmElemIdScript += $cElemIdS
-      $rmElemIdInline += $cElemIdI
+      $rmElementorSrc += 0  # SAFE: not removed
+      $rmElementorInline += 0  # SAFE: not removed
+      $rmLinkPreloadElem += 0  # SAFE: not removed
+      $rmElemIdScript += 0  # SAFE: not removed
+      $rmElemIdInline += 0  # SAFE: not removed
       $rmEmojiSrc += $cEmoS
       $rmEmojiInline += $cEmoI
     }

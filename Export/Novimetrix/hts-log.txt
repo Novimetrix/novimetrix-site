@@ -1,0 +1,15 @@
+HTTrack3.49-2+htsswf+htsjava launched on Wed, 24 Sep 2025 07:51:15 at / +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar+*/wp-content/uploads/*.webp +*/wp-content/uploads/*.png +*.webp +*.png -*/?* -*/feed/* -*/wp-json/* -*/xmlrpc.php +*.svg +*.woff +*.woff2 +*.ttf
+(winhttrack "-qir10%e0C2%Ps2u1j0%s%u0N0%I0p3DaK0H0%kf2o0A %f#f" -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" / -O1 "C:\Users\moham\Desktop\Export\Novimetrix" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar+*/wp-content/uploads/*.webp +*/wp-content/uploads/*.png +*.webp +*.png -*/?* -*/feed/* -*/wp-json/* -*/xmlrpc.php +*.svg +*.woff +*.woff2 +*.ttf )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+07:51:20	Warning: 	Retry after error -4 (No data (connection closed)) at link localhost:10010/wp-content/uploads/2025/09/cropped-novimetrix_bird_logo-300x300.webp (from localhost:10010/)
+07:51:20	Warning: 	Retry after error -4 (No data (connection closed)) at link localhost:10010/about/ (from localhost:10010/)
+07:51:27	Error: 	"Not Found" (404) at link localhost:10010/Trident/ (from localhost:10010/wp-content/plugins/elementor/assets/lib/font-awesome/js/v4-shims.min.js?ver=3.32.2)
+07:51:28	Error: 	"Not Found" (404) at link localhost:10010/OPR/ (from localhost:10010/wp-content/plugins/elementor/assets/js/frontend.min.js?ver=3.32.2)
+
+HTTrack Website Copier/3.49-2 mirror complete in 13 seconds : 60 links scanned, 55 files written (4998881 bytes overall), 5 files updated [153683 bytes received at 11821 bytes/sec], 815211 bytes transferred using HTTP compression in 7 files, ratio 16%, 8.5 requests per connection
+(2 errors, 2 warnings, 0 messages)
