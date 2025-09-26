@@ -1,8 +1,8 @@
 FINAL-PATCH-ONECLICK finished. (v5)
 Scanned files                         : 26
 Changed files                         : 4
-Localhost URL fixes                   : 91
-srcset/sizes removed                  : 30
+Localhost URL fixes                   : 95
+srcset/sizes removed                  : 32
 localhost <script> removed            : 4
 localhost <link> removed              : 31
 Elementor JS <script> removed (path)  : 9
