@@ -1,5 +1,5 @@
 http://localhost:10010 -O "C:\\Users\\moham\\Desktop\\Export\\Novimetrix\\localhost_10010" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js +*.webp +*.svg +*.woff +*.woff2 +*.ttf -*/feed/* -*/wp-json/* -*/xmlrpc.php -y -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -v
-File generated automatically on Tue, 30 Sep 2025 21:32:37, do NOT edit
+File generated automatically on Tue, 30 Sep 2025 21:46:58, do NOT edit
 
 To update a mirror, just launch httrack without any parameters
 The existing cache will be used (and modified)
