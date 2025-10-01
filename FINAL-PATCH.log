@@ -1,5 +1,5 @@
 FINAL-PATCH-ONECLICK finished. (v5)
-Scanned files                         : 26
+Scanned files                         : 28
 Changed files                         : 4
 Localhost URL fixes                   : 90
 srcset/sizes removed                  : 30
@@ -12,5 +12,5 @@ Elementor <script> removed (by id)    : 8
 Elementor inline removed (by id)      : 4
 wp-emoji-release <script> removed     : 0
 wp-emoji inline settings removed      : 4
-Errors                                : 0
-Elapsed                               : 1.0s
+Errors                                : 5
+Elapsed                               : 0.6s
